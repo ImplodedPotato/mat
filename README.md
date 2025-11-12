@@ -5,6 +5,7 @@ A simple, singluar, no dependency (other than std), C99 ```.h``` file to parse a
 ## Details
 
 - Currently only supports LaTeX.
+- Doesn't properly support functions.
 
 ## Gettting Started
 
@@ -19,7 +20,7 @@ Just copy ```mat.h```, include it, and use it in you project.
 #include "mat.h"
 
 int main() {
-    char *equation = "f(x)=2(x+2)^2-5";
+    char *equation = "2(x+2)^2-5";
     Mat mat = { 0 };
     if (init_mat(&mat, equation, 0, true) < 0) { return 1; }
 
