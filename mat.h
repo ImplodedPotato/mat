@@ -15,7 +15,8 @@ typedef enum MatFormat {
 } MatFormat;
 
 // The compiler doesn't always set all of these to unique values
-//   when only some are set, so each has to be set explicitly
+//   when only some are set, so each has to be set explicitly.
+//   Don't depend on the char values.
 typedef enum Token {
     Fail = 0,
     Done = 1,
@@ -25,6 +26,8 @@ typedef enum Token {
 
     Variable  = 'x', // x, y, z, ...           x, y, z, ...
     Number    = 'n', // 1, 3.5, .2             1, 3.5, .2
+    Function  = 'f', // f(x) g(a)              f(x) g(a)
+
     Factorial = '!', // expr!                  expr!
     E         = 'e', // e                      e
     Imaginary = 'i', // e                      e
@@ -51,7 +54,7 @@ typedef enum Token {
  //                                       ie. \frac{expr}{expr}
 
     Exponent     = '^', // expr^{expr}             expr^expr
-    Fraction     = 'f', //  \frac{expr}{expr}      expr/expr
+    Fraction     = '/', //  \frac{expr}{expr}      expr/expr
     SubScript    = '_', //  _expr                  _expr
     SQRT         = 'q', //  \sqrt{expr} or         \sqrt(expr) or
                         //  \sqrt[expr]{expr}      \rt[expr](expr)
@@ -73,10 +76,11 @@ typedef enum Token {
 } Token;
 
 #define CASE_BRACES '(': case ')': case '{': case '}': case '[': case ']'
-#define CASE_SINGLS '=': case '+': case '-': case '*': case '^': case '!': case 'e': case 'i'
+#define CASE_SINGLES '=': case '+': case '-': case '*': case '^': case '!': case 'e': case 'i'
 
 #define WORD_TOKENS_MAP_LEN 16
 
+// A map of escape sequence words, they need a '\' in in front of them
 static const  struct  {
     const char *cstrs[WORD_TOKENS_MAP_LEN];
     Token tokens[WORD_TOKENS_MAP_LEN];
@@ -119,19 +123,6 @@ static const  struct  {
     }
 };
 
-typedef struct Mat {
-    MatFormat ftype;
-    bool show_warnings;
-    char *in_stream;
-    int offset;
-    bool strict_reporting; // returns false if Token == Fail
-    char *fail;
-
-    Token token;
-    char  variable; // Should multi-char variable names be supported?
-    double number;
-} Mat;
-
 typedef struct String {
     char *data;
     uint len;
@@ -143,7 +134,21 @@ typedef struct StringSlice {
     uint len;
 } StringSlice;
 
-#define SSF "%.*s"
+#define SSF "%.*s" // StringSliceFormat
+
+typedef struct Mat {
+    MatFormat ftype;
+    bool show_warnings;
+    char *in_stream;
+    int offset;
+    bool strict_reporting; // returns false if Token == Fail
+    char *fail;
+
+    Token  token;
+    char   variable; // Should multi-char variable names be supported?
+    char   function;  // Should multi-char variable names be supported?
+    double number;
+} Mat;
 
 int init_mat(Mat *mat, char *in_stream, MatFormat ftype, bool show_warnings, bool strict_reporting);
 bool step_mat(Mat *mat);
@@ -176,8 +181,9 @@ int init_mat(Mat *mat, char *in_stream, MatFormat ftype, bool show_warnings, boo
 
 bool step_mat(Mat *mat) {
     char *str = mat->in_stream+mat->offset;
-    char next_char = *str;
-    if (next_char == '\0') {
+    char curr_char = *str;
+    char next_char = *(str+1);
+    if (curr_char == '\0') {
         mat->token = Done;
         return false;
     }
@@ -187,7 +193,7 @@ bool step_mat(Mat *mat) {
         return false;
     }
 
-    switch (next_char) {
+    switch (curr_char) {
         // WARNING: This only works with GCC and Clang
         case '0' ... '9': case '.': {
             char *end = NULL;
@@ -196,10 +202,17 @@ bool step_mat(Mat *mat) {
             mat->token = Number;
             return true;
         } break;
-        case 'x': {
+        case 'a' ... 'd': case 'f' ... 'h': case 'j' ... 'z': case 'A' ... 'Z': {
+            // Excludes 'i', the imaginary unit, and the natual number 'e'
+            if ('(' == next_char) {
+                mat->token = Function;
+                mat->function = curr_char;
+                mat->offset++;
+                return true;
+            }
             mat->token = Variable;
             mat->offset++;
-            mat->variable = next_char;
+            mat->variable = curr_char;
             return true;
         } break;
         case '\\': {
@@ -214,16 +227,15 @@ bool step_mat(Mat *mat) {
             mat->offset += word.len+1;
             return true;
         } break;
-        case CASE_BRACES: case CASE_SINGLS: {;
-            mat->token = (Token)next_char;
+        case CASE_BRACES: case CASE_SINGLES: {;
+            mat->token = (Token)curr_char;
             mat->offset++;
             return true;
         } break;
-        defualt: break;
     }
-    printf(MAT_WARN"Unexpected: '%c'\n", next_char);
+    printf(MAT_WARN"Unexpected: '%c'\n", curr_char);
     mat->token = Fail;
-    mat->fail =(char*)MAT_ERROR"Fail";
+    mat->fail = (char*)MAT_ERROR"Fail";
     mat->offset++;
     return true;
 }
@@ -262,6 +274,8 @@ const char *token_to_cstr(const Token token) {
 
         case Variable:     { return "Variable";  } break;
         case Number:       { return "Number";    } break;
+        case Function:     { return "Function";  } break;
+
         case E:            { return "e";         } break;
         case Imaginary:    { return "i";         } break;
         case Pi:           { return "π (pi)";    } break;
@@ -296,7 +310,5 @@ const char *token_to_cstr(const Token token) {
         case CBracket:     { return "]";         } break;
     }
 }
-
-
 
 #endif

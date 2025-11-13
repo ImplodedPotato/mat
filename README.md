@@ -5,41 +5,43 @@ A simple, singluar, no dependency (other than std), C99 ```.h``` file to parse a
 ## Details
 
 - Currently only supports LaTeX.
-- Doesn't properly support functions.
 
 ## Gettting Started
 
 Just copy ```mat.h```, include it, and use it in you project.
-
 
 ## Simple example
 
 ``` C
 #include <stdio.h>
 #define MAT_IMPLEMENTATION
-#include "mat.h"
+#include "mat/mat.h"
 
 int main() {
-    char *equation = "2(x+2)^2-5";
+    char *equation = "f(x)=3(x+1)^4-1";
     Mat mat = { 0 };
-    if (init_mat(&mat, equation, 0, true) < 0) { return 1; }
+    if (init_mat(&mat, equation, 0, true, true) < 0) { return 1; }
 
     while (step_mat(&mat)) {
         switch (mat.token) {
             case Number: {
-                printf("  %f\n", mat.number);
+                printf("Num: %f\n", mat.number);
             } break;
             case Variable: {
-                printf("  %c\n", mat.variable);
+                printf("Var: %c\n", mat.variable);
             } break;
             case Exponent: {
-                printf("  ^");
+                printf("Xpn:  ^\n");
+            } break;
+            case Function: {
+                printf("Fn:  %c\n", mat.function);
             } break;
             case CASE_BRACES: {
-                printf("  %c\n", mat.token);
+                printf("Dlm: %c\n", mat.token);
             } break;
             case Fail: {
                 printf(MAT_ERROR"Something Went Wrong\n");
+                return 1;
             } break;
             default: {
                 printf(MAT_WARN"Unhandled Token: %s\n", token_to_cstr(mat.token));
