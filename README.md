@@ -50,3 +50,8 @@ int main() {
     }
 }
 ```
+
+## TODO
+
+- Add an optional namespacing with an 'MAT_PREFIX' macro.
+- Add a function to return all of the tokens.
