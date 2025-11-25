@@ -22,6 +22,9 @@
   SOFTWARE.
 */
 
+#ifndef MAT_H_
+#define MAT_H_
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -433,4 +436,6 @@ const char *mat_token_to_cstr(const Mat_Token token) {
     }
 }
 
-#endif
+#endif // MAT_IMPLEMENTATION
+
+#endif // MAT_H_
