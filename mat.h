@@ -185,7 +185,7 @@ typedef struct Mat_Tokens {
     size_t capacity;
 } Mat_Tokens;
 
-#define SSF "%.*s" // StringSliceFormat
+#define MAT_SSF "%.*s" // StringSliceFormat
 
 typedef struct Mat {
     MatFormat ftype;
@@ -286,7 +286,7 @@ bool mat_step(Mat *mat) {
             Mat_StringSlice word = mat_get_word(cstr);
             Mat_Token t = mat_get_word_token(word);
             if (t == Mat_T_Fail) {
-                printf(MAT_WARN"Unhandled: \\'" SSF"'\n", word.count, word.items);
+                printf(MAT_WARN"Unhandled: \\'" MAT_SSF"'\n", word.count, word.items);
                 return false;
             }
             mat->token = t;

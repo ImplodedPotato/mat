@@ -20,7 +20,7 @@ Just copy ```mat.h```, include it, and use it in you project.
 #include "mat/mat.h"
 
 int main() {
-    char *equation = "f(x)=3(x+1)^4-1";
+    const char *equation = "f(x)=3(x+1)^4-1";
     Mat mat = { 0 };
     if (mat_init(&mat, equation) < 0) { return 1; }
 
@@ -62,7 +62,7 @@ int main() {
 #include "mat/mat.h"
 
 int main() {
-    char *equation = "f(x)=3(x+1)^4-1";
+    const char *equation = "f(x)=3(x+1)^4-1";
     Mat mat = { 0 };
     if (mat_init(&mat, equation) < 0) { return 1; }
 
