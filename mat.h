@@ -4,11 +4,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#include <sys/types.h>
 #include <stdbool.h>
 
 #define MAT_WARN   "\e[33mWarning:\e[0m "
 #define MAT_ERROR  "\e[1;31mError:\e[0m "
+#define mat_uint   unsigned int
+
+
 
 // From nob.h: https://github.com/tsoding/nob.h
 #ifdef __cplusplus
@@ -158,13 +160,13 @@ static const  struct  {
 // Although, nob.h isn't required.
 typedef struct Mat_String {
     char *items;
-    uint count;
-    uint capacity;
+    mat_uint count;
+    mat_uint capacity;
 } String;
 
 typedef struct Mat_StringSlice {
     char *items;
-    uint count;
+    mat_uint count;
 } Mat_StringSlice;
 
 typedef union Mat_TokenData {
@@ -341,7 +343,7 @@ Mat_Tokens mat_get_all_tokens(Mat *mat) {
 }
 
 Mat_StringSlice mat_get_word(char *str) {
-    uint len = 0;
+    mat_uint len = 0;
 
     for (char next = *str; next >= 'a' && next <= 'z'; len++) {
         next = *(str+len);
