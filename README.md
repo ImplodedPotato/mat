@@ -10,7 +10,9 @@ A simple, singluar, no dependency (other than std), C99 ```.h``` file to parse a
 
 Just copy ```mat.h```, include it, and use it in you project.
 
-## Simple example
+## Examples
+
+### Simple mat_step() Example
 
 ``` C
 #include <stdio.h>
@@ -20,38 +22,55 @@ Just copy ```mat.h```, include it, and use it in you project.
 int main() {
     char *equation = "f(x)=3(x+1)^4-1";
     Mat mat = { 0 };
-    if (init_mat(&mat, equation, 0, true, true) < 0) { return 1; }
+    if (mat_init(&mat, equation) < 0) { return 1; }
 
-    while (step_mat(&mat)) {
+    while (mat_step(&mat)) {
         switch (mat.token) {
-            case Number: {
-                printf("Num: %f\n", mat.number);
+            case Mat_T_Number: {
+                printf("Num: %f\n", mat.data.num);
             } break;
-            case Variable: {
-                printf("Var: %c\n", mat.variable);
+            case Mat_T_Variable: {
+                printf("Var: %c\n", mat.data.var);
             } break;
-            case Exponent: {
+            case Mat_T_Exponent: {
                 printf("Xpn:  ^\n");
             } break;
-            case Function: {
-                printf("Fn:  %c\n", mat.function);
+            case Mat_T_Function: {
+                printf("Fn:  %c\n", mat.data.fun);
             } break;
-            case CASE_BRACES: {
+            case MAT_CASE_BRACES: {
                 printf("Dlm: %c\n", mat.token);
             } break;
-            case Fail: {
+            case Mat_T_Fail: {
                 printf(MAT_ERROR"Something Went Wrong\n");
                 return 1;
             } break;
             default: {
-                printf(MAT_WARN"Unhandled Token: %s\n", token_to_cstr(mat.token));
+                printf(MAT_WARN"Unhandled Token: %s\n", mat_token_to_cstr(mat.token));
             } break;
         }
     }
 }
 ```
 
-## TODO
+### Simple mat_get_all_tokens() Example
 
-- Add an optional namespacing with an 'MAT_PREFIX' macro.
-- Add a function to return all of the tokens.
+``` C
+#include <stddef.h>
+#include <stdio.h>
+#define MAT_IMPLEMENTATION
+#include "mat/mat.h"
+
+int main() {
+    char *equation = "f(x)=3(x+1)^4-1";
+    Mat mat = { 0 };
+    if (mat_init(&mat, equation) < 0) { return 1; }
+
+    Mat_Tokens tokens = mat_get_all_tokens(&mat);
+
+    for (size_t i = 0; i < tokens.count; ++i) {
+        Mat_TAD tad = tokens.items[i];
+        mat_print_tad(tad);
+    }
+}
+```
